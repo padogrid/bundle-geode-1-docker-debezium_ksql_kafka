@@ -37,6 +37,8 @@ services:
     volumes:
       - ./padogrid:/padogrid/
     environment:
+      - KAFKA_DEBUG=true
+      - JAVA_DEBUG_PORT=9100
       - BOOTSTRAP_SERVERS=kafka:9092
       - GROUP_ID=1
       - CONFIG_STORAGE_TOPIC=my_connect_configs
@@ -44,8 +46,6 @@ services:
       - STATUS_STORAGE_TOPIC=my_connect_statuses
       - CONNECT_PLUGIN_PATH=/kafka/connect,/padogrid/plugins,/padogrid/lib
       - CLASSPATH=/padogrid/plugins/*:/padogrid/lib/*
-      - CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE=false
-      - CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE=false
   ksql-server:
     image: confluentinc/cp-ksql-server:${KSQL_VERSION}
     hostname: ksql-server

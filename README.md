@@ -295,8 +295,8 @@ Ctrl-D
 
 ```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
-./watch_topic dbserver1.nw.customers
-./watch_topic dbserver1.nw.orders
+./watch_topic customers
+./watch_topic orders
 ```
 
 ### Run MySQL CLI
@@ -310,7 +310,7 @@ Run join query as we did with KSQL:
 
 ```sql
 use nw;
-select c.customerid,c.address,o.orderid,o.customerid,o.freight
+select c.customerid,c.address,o.orderid,o.customerid,o.freight \
 from customers c \
 inner join orders o \
 on (c.customerid=o.customerid) order by c.customerid,o.orderid limit 10;
