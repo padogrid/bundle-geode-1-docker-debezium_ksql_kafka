@@ -391,7 +391,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 
 From `gfsh`, query the `/nw/customers` and `/nw/orders` regions.
 
-```bash
+```gfsh
 # Connect to the default locator
 connect
 
@@ -404,6 +404,18 @@ query --query="select * from /nw/customers limit 100"
 query --query="select * from /nw/orders limit 100"
 ```
 
+If you get a query error message similart to the following,
+
+```gfsh
+Computed ColSize=0 Set RESULT_VIEWER to external. This uses the 'less' command (with horizontal scrolling) to see wider results
+```
+
+then set the APP_RESULT_VIEWER  to "external" and run the queries again.
+
+```gfsh
+set variable --name=APP_RESULT_VIEWER --value=“external”
+```
+
 ## Teardown
 
 ```bash
@@ -414,6 +426,9 @@ docker-compose down
 # Stop Geode containers
 cd_docker geode
 docker-compose down
+
+# Prune all stopped containers
+docker container prune
 ```
 
 ## References

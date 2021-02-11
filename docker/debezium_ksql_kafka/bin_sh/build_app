@@ -9,7 +9,7 @@ if [ "$HELP" == "true" ]; then
    echo "   ./$EXECUTABLE [-?]"
    echo ""
    echo "   Copies the geode jar files to the 'padogrid' directory which is mounted"
-   echo "   by the Docker Hazelcast connector container."
+   echo "   by the Docker Geode connector container."
    echo ""
    echo "Default: ./$EXECUTABLE"
    echo ""

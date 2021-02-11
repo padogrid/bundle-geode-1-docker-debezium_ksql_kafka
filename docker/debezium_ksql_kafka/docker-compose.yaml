@@ -31,6 +31,7 @@ services:
       - mysql
     ports:
       - 8083:8083
+      - 9100:9100
     links:
       - kafka
       - mysql
