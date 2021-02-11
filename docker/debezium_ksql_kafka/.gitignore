@@ -1,0 +1,4 @@
+padogrid/etc/hazelcast-client.xml
+padogrid/lib
+padogrid/log
+padogrid/plugins

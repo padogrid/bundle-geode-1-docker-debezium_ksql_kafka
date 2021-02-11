@@ -1,1 +1,1 @@
-This bundle serves as a template for creating a new Geode bundle. Run `show_bundle bundle-geode-template` to see instructions.
+This bundle integrates Hazelcast with Debezium and Confluent KSQL for ingesting initial data and CDC records from MySQL into a Hazelcast cluster via a Kafka sink connector included in the `padogrid` distribution.
