@@ -416,6 +416,12 @@ then set the APP_RESULT_VIEWER  to "external" and run the queries again.
 set variable --name=APP_RESULT_VIEWER --value=“external”
 ```
 
+Quit `gfsh`:
+
+```
+quit
+```
+
 ## Teardown
 
 ```bash
