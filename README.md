@@ -149,7 +149,7 @@ docker-compose up
 
 Execute `init_all` which performs the following:
 
-- Place the included `cache.xml` file to the Geode docker cluster. This file configures Geode with co-located data. You can use the included Power BI files to generate reports by executing OQL. See details in the [Power BI](#power-bi)  section.
+- Place the included `cache.xml` file to the Geode docker cluster. This file configures Geode with co-located data. You can use the included Power BI files to generate reports by executing OQL. See details in the [Run Power BI](#10-run-power-bi) section.
 - Create the `nw` database and grant all privileges to the user `debezium`:
 
 ```bash
@@ -292,7 +292,7 @@ Quit KSQL:
 Ctrl-D
 ```
 
-### Watch topics
+### 5. Watch topics
 
 ```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
@@ -300,7 +300,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 ./watch_topic orders
 ```
 
-### Run MySQL CLI
+### 6. Run MySQL CLI
 
 ```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
@@ -342,7 +342,7 @@ Quit MySQL CLI:
 quit
 ```
 
-### Check Kafka Connect
+### 7. Check Kafka Connect
 
 ```bash
 # Check status
@@ -362,7 +362,7 @@ The last command should display the connectors that we registered previously.
 ]
 ```
 
-### Drop KSQL Statements
+### 8. Drop KSQL Statements
 
 The following scripts are provided to drop KSQL queries using the KSQL REST API.
 
@@ -379,7 +379,7 @@ cd_app debezium_ksql_kafka; cd bin_sh
 ./ksql_drop_all_tables
 ```
 
-### Run Geode `gfsh`
+### 9. Run Geode `gfsh`
 
 The `run_gfsh` script logs into the locator container and starts `gfsh`. You can connect to the default locator, localhost[10334], and execture OQL queries to verify MySQL data ingested via Debezium is also captured in the Geode cluster.
 
@@ -423,7 +423,7 @@ Quit `gfsh`:
 quit
 ```
 
-## Power BI
+### 10. Run Power BI
 
 This bundle includes the following Power BI files for generating reports by executing OQL queries using the Geode/GemFire REST API.
 
