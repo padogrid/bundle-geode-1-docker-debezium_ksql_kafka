@@ -438,7 +438,7 @@ The included `*.pbix` files are identical to the ones found in the [Power BI bun
 
 https://github.com/padogrid/bundle-geode-1-app-perf_test_powerbi-cluster-powerbi#loading-pbix-files
 
-11. Run NiFi
+### 11. Run NiFi
 
 This bundle also includes NiFi, which can be started as follows.
 
