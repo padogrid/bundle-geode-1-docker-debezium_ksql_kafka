@@ -428,7 +428,7 @@ quit
 This bundle includes the following Power BI files for generating reports by executing OQL queries using the Geode/GemFire REST API.
 
 ```bash
-cd_docker debezium_hive_kafka
+cd_docker debezium_ksql_kafka
 tree etc/powerbi
 ```
 
@@ -444,12 +444,61 @@ The included `*.pbix` files are identical to the ones found in the [Power BI bun
 
 https://github.com/padogrid/bundle-geode-1-app-perf_test_powerbi-cluster-powerbi#loading-pbix-files
 
+11. Run NiFi
+
+This bundle also includes NiFi, which can be started as follows.
+
+```bash
+cd_docker debezium_ksql_kafka; cd bin_sh
+./start_nifi
+```
+
+URL: http://localhost:8090/nifi
+
+Once started, from the browser, import the following template file.
+
+```bash
+cd_docker debezium_ksql_kafka
+cat etc/nifi/template-Kafka_Live_Archive.xml
+```
+
+Template upload steps:
+
+1. From the canvas, click the right mouse button to open the popup menu.
+2. Select *Upload template* from the popup menu.
+3. Select and upload the `template-Kafka_Live_Archive.xml` template file from the *Upload Template* dialog.
+5. Drag the *Template* icon in the toolbar into the canvas.
+6. Select and add the *Kafka Live Archive* template from pulldown.
+7. Start the *Kafka Live Archive* group.
+
+The *Kafka Live Archive* group generates JSON files in the `padogrid/nifi/data/json` directory upon receipt of Debezium events from the Kafka topics, `customers` and `orders`. Each file represents a Debezium event containing a database CDC record. Run the `perf_test` app again to generate Kafka events.
+
+```bash
+cd_docker debezium_ksql_kafka; cd bin_sh
+tree padogrid/nifi/data/json/
+```
+
+Output:
+
+``
+padogrid/nifi/data/json/
+├── ...
+├── ffca5dc0-b62a-4b61-a0c2-d8366e21851f
+├── ffca8531-c2e3-4c66-b3ef-72ffddefd6eb
+├── fff1d58c-94f6-4560-91d5-19670bc2985c
+└── ffff96b1-e575-4d80-8a0a-53032de8bd44`
+```
+
 ## Teardown
 
 ```bash
 # Stop KSQL and Kafka containers
 cd_docker debezium_ksql_kafka
 docker-compose down
+
+# Stop NiFi
+cd_docker debezium_ksql_kafka; cd bin_sh
+./stop_nifi
 
 # Stop Geode containers
 cd_docker geode
@@ -465,3 +514,4 @@ docker container prune
 2. Debizium-Kafka Geode Connector, PadoGrid bundle, https://github.com/padogrid/bundle-geode-1-docker-debezium_kafka 
 3. Debezium-Hive-Kafka Geode Connector, Padogrid bundle, https://github.com/padogrid/bundle-geode-1-docker-debezium_hive_kafka
 4. Confluent KSQL, GitHub, https://github.com/confluentinc/ksql
+5. NiFi Documentation, http://nifi.apache.org/docs.html
