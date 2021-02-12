@@ -27,12 +27,6 @@ This use case ingests data changes made in the MySQL database into a Geode clust
 
 - jq
 
-## Debezium Tutorial
-
-This demo has been put together based on the following blog from Debezium:
-
-[https://debezium.io/blog/2018/05/24/querying-debezium-change-data-eEvents-with-ksql/](https://debezium.io/blog/2018/05/24/querying-debezium-change-data-eEvents-with-ksql/)
-
 ## Building Demo
 
 We must first build the demo by running the `build_app` command as shown below. This command copies the Geode and `geode-addon-core` jar files to the Docker container mounted volume in the `padogrid` directory so that the Geode Debezium Kafka connector can include them in its class path. It also downloads the ksql JDBC driver jar and its dependencies in the `padogrid/lib/jdbc` directory.
