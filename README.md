@@ -480,7 +480,7 @@ padogrid/nifi/data/json/
 ├── ffca5dc0-b62a-4b61-a0c2-d8366e21851f
 ├── ffca8531-c2e3-4c66-b3ef-72ffddefd6eb
 ├── fff1d58c-94f6-4560-91d5-19670bc2985c
-└── ffff96b1-e575-4d80-8a0a-53032de8bd44`
+└── ffff96b1-e575-4d80-8a0a-53032de8bd44
 ```
 
 ## Teardown
