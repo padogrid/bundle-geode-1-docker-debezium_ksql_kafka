@@ -8,7 +8,7 @@ This bundle integrates Geode with Debezium and Confluent KSQL for ingesting init
 install_bundle -download bundle-geode-1-docker-debezium_ksql_kafka
 ```
 
-:exclamation: If you are running this demo on WSL, make sure your workspace is on a shared folder. The Docker volume it creates will not be visible otherwise.
+:exclamation: If you are running this bundle on WSL, make sure your workspace is on a shared folder. The Docker volume it creates will not be visible otherwise.
 
 ## Use Case
 
@@ -29,7 +29,7 @@ This use case ingests data changes made in the MySQL database into a Geode clust
 
 ## Building Demo
 
-We must first build the demo by running the `build_app` command as shown below. This command copies the Geode and `geode-addon-core` jar files to the Docker container mounted volume in the `padogrid` directory so that the Geode Debezium Kafka connector can include them in its class path. It also downloads the ksql JDBC driver jar and its dependencies in the `padogrid/lib/jdbc` directory.
+We must first build the bundle by running the `build_app` command as shown below. This command copies the Geode and `geode-addon-core` jar files to the Docker container mounted volume in the `padogrid` directory so that the Geode Debezium Kafka connector can include them in its class path. It also downloads the ksql JDBC driver jar and its dependencies in the `padogrid/lib/jdbc` directory.
 
 ```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
