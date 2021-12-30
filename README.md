@@ -45,7 +45,7 @@ tree padogrid
 
 
 ```console
-adogrid/
+padogrid/
 ├── etc
 │   └── client-cache.xml
 ├── lib
