@@ -330,12 +330,6 @@ WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',KEY='customerid');
 DROP TABLE IF EXISTS customers;
 CREATE TABLE customers (customerid string PRIMARY KEY, contactname string, companyname string) \
 WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json');
-
--- Make a join between customer and its orders_stream and create a query that monitors incoming orders_stream
-SELECT customers.customerid,orderid,TIMESTAMPTOSTRING(orderdate, 'yyyy-MM-dd HH:mm:ss'), \
-   customers.contactname,customers.companyname,freight \
-FROM orders_stream LEFT JOIN customers ON orders_stream.customerid=customers.customerid \
-EMIT CHANGES;
 ```
 
 **Join Table and Stream:**
