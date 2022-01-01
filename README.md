@@ -375,12 +375,13 @@ Quit KSQL/ksqlDB:
 Ctrl-D
 ```
 
-### 5. Watch topics
+### 5. List and watch topics
 
 ```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
-./watch_topic customers
-./watch_topic orders
+./list_topics
+./watch_topic dbserver1.nw.customers
+./watch_topic dbserver1.nw.orders
 ```
 
 ### 6. Run MySQL CLI
