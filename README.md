@@ -362,7 +362,7 @@ Output:
 
 **Ingest data into MySQL:**
 
-While the above select statement is running, ingest the mock data again to see the join results being updated.
+While the above select statement is running, reingest the mock data to see the join results live-updated.
 
 ```bash
 cd_app perf_test_ksql; cd bin_sh
