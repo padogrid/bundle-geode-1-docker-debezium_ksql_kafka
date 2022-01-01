@@ -360,6 +360,15 @@ Output:
 ...
 ```
 
+**Ingest data into MySQL:**
+
+While the above select statement is running, ingest the mock data again to see the join results being updated.
+
+```bash
+cd_app perf_test_ksql; cd bin_sh
+./test_group -run -db -prop ../etc/group-factory.properties
+```
+
 Quit KSQL/ksqlDB:
 
 ```
