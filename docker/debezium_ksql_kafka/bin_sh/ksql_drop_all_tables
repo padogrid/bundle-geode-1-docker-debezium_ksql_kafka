@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+. $SCRIPT_DIR/.addonenv.sh
+
+EXECUTABLE="`basename $0`"
+
+if [ "$HELP" == "true" ]; then
+   echo "Usage:"
+   echo "   ./$EXECUTABLE [-?]"
+   echo ""
+   echo "   Drops all KSQL tables using the KSQL REST API."
+   echo ""
+   echo "Default: ./$EXECUTABLE"
+   echo ""
+   exit
+fi
+
+if [ "$(which jq)" == "" ]; then
+   echo -e >&2 "${CLightRed}ERROR:${CNone} Executable not found: [jq]. Please install 'jq' and try again. Command aborted."
+   exit 1
+fi
+
+curl -sS -X "POST" "http://localhost:8088/ksql" \
+             -H "Content-Type: application/vnd.ksql.v1+json; charset=utf-8" \
+             -d '{"ksql": "SHOW TABLES;"}' | \
+      jq '.[].tables[].name' | \
+      xargs -Ifoo curl -sS -X "POST" "http://localhost:8088/ksql" \
+               -H "Content-Type: application/vnd.ksql.v1+json; charset=utf-8" \
+               -d '{"ksql": "DROP TABLE 'foo';"}' | jq .

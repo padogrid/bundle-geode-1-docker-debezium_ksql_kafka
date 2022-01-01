@@ -18,7 +18,6 @@ This use case ingests data changes made in the MySQL database into a Geode clust
 
 ## Required Software
 
-- PadoGrid 0.9.5-SNAPSHOT+ (02/11/2021)
 - Docker
 - Docker Compose
 - Maven 3.x
@@ -29,7 +28,19 @@ This use case ingests data changes made in the MySQL database into a Geode clust
 
 ## Building Demo
 
-We must first build the bundle by running the `build_app` command as shown below. This command copies the Geode and `geode-addon-core` jar files to the Docker container mounted volume in the `padogrid` directory so that the Geode Debezium Kafka connector can include them in its class path. It also downloads the ksql JDBC driver jar and its dependencies in the `padogrid/lib/jdbc` directory.
+:pencil2: This bundle builds the demo enviroment based on the Geode version in your workspace. Make sure your workspace has been configured with the desired version before building the demo environment.
+
+Before you begin, make sure you are in a Geode product context by switching into a Geode cluster. You can create a Geode cluster if it does not exist as shown below.
+
+``bash
+# Create the default cluster named, 'mygeode'
+make_cluster -product geode
+
+# Switch to the 'mygeode' cluster to set the product context
+switch_cluster mygeode
+```
+
+We must first build the bundle by running the `build_app` command as shown below. This command copies the Geode, `padogrid-common`, and `geode-addon-core` jar files to the Docker container mounted volume in the `padogrid` directory so that the Geode Debezium Kafka connector can include them in its class path. It also downloads the ksql JDBC driver jar and its dependencies in the `padogrid/lib/jdbc` directory.
 
 ```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
@@ -50,16 +61,19 @@ padogrid/
 │   └── client-cache.xml
 ├── lib
 │   ├── ...
-│   ├── geode-addon-core-0.9.5-SNAPSHOT.jar
+│   ├── geode-addon-core-0.9.13-SNAPSHOT.jar
+│   ├── ...
+│   ├── padogrid-common-0.9.13-SNAPSHOT.jar
 │   ├── ...
 ├── log
 └── plugins
-    └── geode-addon-core-0.9.5-SNAPSHOT-tests.jar
+    └── geode-addon-core-0.9.13-SNAPSHOT-tests.jar
 ```
+
 
 ## Creating Geode Docker Containers
 
-Let's create a Geode cluster to run on Docker containers as follows.
+Let's create a Geode cluster to run on Docker containers as follows. If you have not installed Geode, then run the `install_padogrid -product geode` command to install the version of your choice and then run the `update_product -product geode` command to set the version.
 
 ```bash
 create_docker -product geode -cluster geode -host host.docker.internal
@@ -102,7 +116,7 @@ Replace `host.docker.internal` in `client-cache.xml` with your host IP address.
 Create and build `perf_test_ksql` for ingesting mock data into MySQL:
 
 ```bash
-create_app -app perf_test -name perf_test_ksql
+create_app -product geode -app perf_test -name perf_test_ksql
 cd_app perf_test_ksql; cd bin_sh
 ./build_app
 ```
@@ -121,7 +135,7 @@ Set user name and password as follows:
                 <property name="connection.password">dbz</property>
 ```
 
-## Starting Docker Containers
+## Startup Sequence
 
 ### 1. Start Geode
 
@@ -132,11 +146,24 @@ docker-compose up
 
 ### 2. Start Debezium
 
+This bundle includes two (2) Docker Compose files. The default docker-compose.yaml file is for running KSQL and the docker-compose-kdbsql.yaml file is for running ksqlDB. Run one of them as shown below.
+
+**KSQL:**
+
 Start Zookeeper, Kafka, MySQL, Kafka Connect, Confluent KSQL containers:
 
 ```bash
 cd_docker debezium_ksql_kafka
 docker-compose up
+```
+
+**ksqlDB:**
+
+Start Zookeeper, Kafka, MySQL, Kafka Connect, Confluent ksqlDB containers:
+
+```bash
+cd_docker debezium_ksql_kafka
+docker-compose -f docker-compose-ksqldb.yaml up
 ```
 
 :exclamation: Wait till all the containers are up before executing the `init_all` script.
@@ -162,49 +189,77 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 
 ### 3. Ingest mock data into the `nw.customers` and `nw.orders` tables in MySQL
 
-Note that if you run the following more than once then you may see multiple customers sharing the same customer ID when you execute KSQL queries on streams since the streams kepp all the CDC records. The database (MySQL), on the other hand, will always have a single customer per customer ID.
+Note that if you run the script more than once then you may see multiple customers sharing the same customer ID when you execute KSQL queries on streams since the streams keep all the CDC records. The database (MySQL), on the other hand, will always have a single customer per customer ID.
 
 ```bash
 cd_app perf_test_ksql; cd bin_sh
 ./test_group -run -db -prop ../etc/group-factory.properties
 ```
 
-### 4. Run KSQL CLI
+### 4. Run KSQL/ksqlDB CLI
+
+If you started KSQL containers, i.e., `docker-compose.yaml`, then execute `run_ksql_cli` as shown below.
+
+**KSQL CLI:**
 
 ```
 cd_docker debezium_ksql_kafka; cd bin_sh
 ./run_ksql_cli
 ```
 
-KSQL processing by default starts with `latest` offsets. Set the KSQL processing to `earliest` offsets. 
+If you started ksqlDB containers, i.e., `docker-compose-ksqldb.yaml`, then execute `run_ksqldb_cli` as shown below.
+
+**ksqlDB CLI:**
+
+```bash
+cd_docker debezium_ksql_kafka; cd bin_sh
+./run_ksqldb_cli
+```
+
+The KSQL/ksqlDB processing by default starts with `latest` offsets. Set the KSQL/ksqlDB processing to `earliest` offsets. 
 
 ```sql
 SET 'auto.offset.reset' = 'earliest';
 ```
 
-Create and query `customers` stream
+#### 4.1 Create Streams
+
+Create the following streams:
+
+- `customers_from_debezium`
+- `orders_from_debezium`
 
 ```sql
 -- Create customers_from_debezium stream
 -- (payload struct <after:struct<customerid:string,address:string,city:string,companyname:string,contactname:string,contacttitle:string,country:string,fax:string,phone:string,postalcode:string,region:string>>)
-
+DROP STREAM IF EXISTS customers_from_debezium;
 CREATE STREAM customers_from_debezium \
-(customerid string,address string,city string,companyname string,contactname string,contacttitle string,country string,fax string,phone string,postalcode string,region string) \
+   (customerid string,address string,city string,companyname string,contactname string, \
+   contacttitle string,country string,fax string,phone string,postalcode string,region string) \
 WITH (KAFKA_TOPIC='dbserver1.nw.customers',VALUE_FORMAT='json');
 
 -- Create orders_from_debezium stream
 -- (payload struct <after:struct<orderid:string,customerid:string,employeeid:string,freight:double,orderdate:bigint,requireddate:bigint,shipaddress:string,shipcity:string,shiptcountry:string,shipname:string,shippostcal:string,shipregion:string,shipvia:string,shippeddate:string>>)
-
+DROP STREAM IF EXISTS orders_from_debezium;
 CREATE STREAM orders_from_debezium \
-(orderid string,customerid string,employeeid string,freight double,orderdate bigint,requireddate bigint,shipaddress string,shipcity string,shiptcountry string,shipname string,shippostcal string,shipregion string,shipvia string,shippeddate string) \
+   (orderid string,customerid string,employeeid string,freight double,orderdate bigint, \
+   requireddate bigint,shipaddress string,shipcity string,shiptcountry string,shipname string, \
+   shippostcal string,shipregion string,shipvia string,shippeddate string) \
 WITH (KAFKA_TOPIC='dbserver1.nw.orders',VALUE_FORMAT='json');
+```
 
--- Repartition
+Repartition streams.
 
-CREATE STREAM orders WITH (KAFKA_TOPIC='ORDERS_REPART',VALUE_FORMAT='json',PARTITIONS=1) as SELECT * FROM orders_from_debezium PARTITION BY orderid;
+```sql
+-- orders_stream
+DROP STREAM IF EXISTS orders_stream;
+CREATE STREAM orders_stream WITH (KAFKA_TOPIC='ORDERS_REPART',VALUE_FORMAT='json',PARTITIONS=1) \
+AS SELECT * FROM orders_from_debezium PARTITION BY orderid;
 
 -- customers_stream
-CREATE STREAM customers_stream WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',PARTITIONS=1) as SELECT * FROM customers_from_debezium PARTITION BY customerid;
+DROP STREAM IF EXISTS customers_stream;
+CREATE STREAM customers_stream WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',PARTITIONS=1) \
+AS SELECT * FROM customers_from_debezium PARTITION BY customerid;
 ```
 
 **Compare results: original vs. repartitioned**
@@ -235,7 +290,7 @@ Repartitioned Query:
 
 
 ```sql
-SELECT * FROM orders EMIT CHANGES LIMIT 1;
+SELECT * FROM orders_stream EMIT CHANGES LIMIT 1;
 ```
 
 Output:
@@ -254,14 +309,45 @@ Limit Reached
 Query terminated
 ```
 
-Join customers and orders
+#### 4.2 Create Tables
+
+**KSQL:**
+
+Create the `customers` table. Note the KEY and PRIMARY KEY keyword difference between KSQL and ksqkDB.
+
+**KSQL:**
 
 ```sql
 -- Create customers table from the topic containing repartitioned customers
-CREATE TABLE customers (customerid string, contactname string, companyname string) WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',KEY='customerid');
+DROP TABLE IF EXISTS customers;
+CREATE TABLE customers (customerid string, contactname string, companyname string) \
+WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',KEY='customerid');
+```
 
--- Make a join between customer and its orders and create a query that monitors incoming orders
-SELECT customers.customerid,orderid,TIMESTAMPTOSTRING(orderdate, 'yyyy-MM-dd HH:mm:ss'),customers.contactname,customers.companyname,freight FROM orders left join customers on orders.customerid=customers.customerid EMIT CHANGES;
+**ksqlDB:**
+
+```sql
+DROP TABLE IF EXISTS customers;
+CREATE TABLE customers (customerid string PRIMARY KEY, contactname string, companyname string) \
+WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json');
+
+-- Make a join between customer and its orders_stream and create a query that monitors incoming orders_stream
+SELECT customers.customerid,orderid,TIMESTAMPTOSTRING(orderdate, 'yyyy-MM-dd HH:mm:ss'), \
+   customers.contactname,customers.companyname,freight \
+FROM orders_stream LEFT JOIN customers ON orders_stream.customerid=customers.customerid \
+EMIT CHANGES;
+```
+
+**Join Table and Stream:**
+
+Join `customers` and `orders_stream`, and emit changes.
+
+```sql
+-- Make a join between customer and its orders_stream and create a query that monitors incoming orders_stream
+SELECT customers.customerid,orderid,TIMESTAMPTOSTRING(orderdate, 'yyyy-MM-dd HH:mm:ss'), \
+   customers.contactname,customers.companyname,freight \
+FROM orders_stream LEFT JOIN customers ON orders_stream.customerid=customers.customerid \
+EMIT CHANGES;
 ```
 
 Output:
@@ -280,7 +366,7 @@ Output:
 ...
 ```
 
-Quit KSQL:
+Quit KSQL/ksqlDB:
 
 ```
 Ctrl-D
@@ -301,7 +387,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 ./run_mysql_cli
 ```
 
-Run join query as we did with KSQL:
+Run join query as we did with KSQL/ksqlDB:
 
 ```sql
 use nw;
@@ -356,9 +442,9 @@ The last command should display the connectors that we registered previously.
 ]
 ```
 
-### 8. Drop KSQL Statements
+### 8. Drop KSQL/ksqlDB Statements
 
-The following scripts are provided to drop KSQL queries using the KSQL REST API.
+The following scripts are provided to drop KSQL/ksqlDB queries using the KSQL/ksqlDB REST API.
 
 ```
 cd_app debezium_ksql_kafka; cd bin_sh

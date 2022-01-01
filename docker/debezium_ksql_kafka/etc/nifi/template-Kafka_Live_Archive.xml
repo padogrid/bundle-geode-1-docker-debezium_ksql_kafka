@@ -373,7 +373,7 @@
                             </entry>
                             <entry>
 <key>topic</key>
-<value>customers,orders</value>
+<value>dbserver1.nw.customers,dbserver1.nw.orders</value>
                             </entry>
                             <entry>
 <key>topic_type</key>
