@@ -32,7 +32,7 @@ This use case ingests data changes made in the MySQL database into a Geode clust
 
 Before you begin, make sure you are in a Geode product context by switching into a Geode cluster. You can create a Geode cluster if it does not exist as shown below.
 
-``bash
+```bash
 # Create the default cluster named, 'mygeode'
 make_cluster -product geode
 
