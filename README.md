@@ -330,12 +330,6 @@ WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json',KEY='customerid');
 DROP TABLE IF EXISTS customers;
 CREATE TABLE customers (customerid string PRIMARY KEY, contactname string, companyname string) \
 WITH (KAFKA_TOPIC='CUSTOMERS_REPART',VALUE_FORMAT='json');
-
--- Make a join between customer and its orders_stream and create a query that monitors incoming orders_stream
-SELECT customers.customerid,orderid,TIMESTAMPTOSTRING(orderdate, 'yyyy-MM-dd HH:mm:ss'), \
-   customers.contactname,customers.companyname,freight \
-FROM orders_stream LEFT JOIN customers ON orders_stream.customerid=customers.customerid \
-EMIT CHANGES;
 ```
 
 **Join Table and Stream:**
@@ -366,18 +360,28 @@ Output:
 ...
 ```
 
+**Ingest data into MySQL:**
+
+While the above select statement is running, reingest the mock data to see the join results live-updated.
+
+```bash
+cd_app perf_test_ksql; cd bin_sh
+./test_group -run -db -prop ../etc/group-factory.properties
+```
+
 Quit KSQL/ksqlDB:
 
 ```
 Ctrl-D
 ```
 
-### 5. Watch topics
+### 5. List and watch topics
 
 ```bash
 cd_docker debezium_ksql_kafka; cd bin_sh
-./watch_topic customers
-./watch_topic orders
+./list_topics
+./watch_topic dbserver1.nw.customers
+./watch_topic dbserver1.nw.orders
 ```
 
 ### 6. Run MySQL CLI
@@ -533,7 +537,13 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 ./start_nifi
 ```
 
-URL: http://localhost:8090/nifi
+URL: https://localhost:8443/nifi
+
+Run the following to get the generated user name and password from the log file. 
+
+```bash
+docker logs nifi |grep -i generated
+```
 
 Once started, from the browser, import the following template file.
 
