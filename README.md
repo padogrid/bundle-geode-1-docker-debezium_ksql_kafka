@@ -46,7 +46,7 @@ switch_cluster mygeode
 We must first build the bundle by running the `build_app` command as shown below. This command copies the Geode, `padogrid-common`, and `geode-addon-core` jar files to the Docker container mounted volume in the `padogrid` directory so that the Geode Debezium Kafka connector can include them in its class path. It also downloads the ksql JDBC driver jar and its dependencies in the `padogrid/lib/jdbc` directory.
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./build_app
 ```
 
@@ -64,13 +64,13 @@ padogrid/
 │   └── client-cache.xml
 ├── lib
 │   ├── ...
-│   ├── geode-addon-core-0.9.13-SNAPSHOT.jar
+│   ├── geode-addon-core-0.9.21.jar
 │   ├── ...
-│   ├── padogrid-common-0.9.13-SNAPSHOT.jar
+│   ├── padogrid-common-0.9.21.jar
 │   ├── ...
 ├── log
 └── plugins
-    └── geode-addon-core-0.9.13-SNAPSHOT-tests.jar
+    └── geode-addon-core-0.9.21.jar
 ```
 
 
@@ -120,7 +120,7 @@ Create and build `perf_test_ksql` for ingesting mock data into MySQL:
 
 ```bash
 create_app -product geode -app perf_test -name perf_test_ksql
-cd_app perf_test_ksql; cd bin_sh
+cd_app perf_test_ksql/bin_sh
 ./build_app
 ```
 
@@ -177,14 +177,14 @@ Execute `init_all` which performs the following:
 - Create the `nw` database and grant all privileges to the user `debezium`:
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./init_all
 ```
 
 There are three (3) Kafka connectors that we need to register. The MySQL connector is provided by Debezium and the data connectors are part of the PadoGrid distribution. 
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./register_connector_mysql
 ./register_connector_data_customers
 ./register_connector_data_orders
@@ -195,7 +195,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 Note that if you run the script more than once then you may see multiple customers sharing the same customer ID when you execute KSQL queries on streams since the streams keep all the CDC records. The database (MySQL), on the other hand, will always have a single customer per customer ID.
 
 ```bash
-cd_app perf_test_ksql; cd bin_sh
+cd_app perf_test_ksql/bin_sh
 ./test_group -run -db -prop ../etc/group-factory.properties
 ```
 
@@ -206,7 +206,7 @@ If you started KSQL containers, i.e., `docker-compose.yaml`, then execute `run_k
 **KSQL CLI:**
 
 ```
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./run_ksql_cli
 ```
 
@@ -215,7 +215,7 @@ If you started ksqlDB containers, i.e., `docker-compose-ksqldb.yaml`, then execu
 **ksqlDB CLI:**
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./run_ksqldb_cli
 ```
 
@@ -368,7 +368,7 @@ Output:
 While the above select statement is running, reingest the mock data to see the join results live-updated.
 
 ```bash
-cd_app perf_test_ksql; cd bin_sh
+cd_app perf_test_ksql/bin_sh
 ./test_group -run -db -prop ../etc/group-factory.properties
 ```
 
@@ -381,7 +381,7 @@ Ctrl-D
 ### 5. List and watch topics
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./list_topics
 ./watch_topic dbserver1.nw.customers
 ./watch_topic dbserver1.nw.orders
@@ -390,7 +390,7 @@ cd_docker debezium_ksql_kafka; cd bin_sh
 ### 6. Run MySQL CLI
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./run_mysql_cli
 ```
 
@@ -454,7 +454,7 @@ The last command should display the connectors that we registered previously.
 The following scripts are provided to drop KSQL/ksqlDB queries using the KSQL/ksqlDB REST API.
 
 ```
-cd_app debezium_ksql_kafka; cd bin_sh
+cd_app debezium_ksql_kafka/bin_sh
 
 # Drop all queries
 ./ksql_drop_all_queries
@@ -473,7 +473,7 @@ The `run_gfsh` script logs into the locator container and starts `gfsh`. You can
 Login to `gfsh`:
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./run_gfsh
 ```
 
@@ -536,7 +536,7 @@ https://github.com/padogrid/bundle-geode-1-app-perf_test_powerbi-cluster-powerbi
 This bundle also includes NiFi, which can be started as follows.
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./start_nifi
 ```
 
@@ -567,7 +567,7 @@ Template upload steps:
 The *Kafka Live Archive* group generates JSON files in the `padogrid/nifi/data/json` directory upon receipt of Debezium events from the Kafka topics, `customers` and `orders`. Each file represents a Debezium event containing a database CDC record. Run the `perf_test` app again to generate Kafka events.
 
 ```bash
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 tree padogrid/nifi/data/json/
 ```
 
@@ -590,7 +590,7 @@ cd_docker debezium_ksql_kafka
 docker-compose down
 
 # Stop NiFi
-cd_docker debezium_ksql_kafka; cd bin_sh
+cd_docker debezium_ksql_kafka/bin_sh
 ./stop_nifi
 
 # Stop Geode containers
