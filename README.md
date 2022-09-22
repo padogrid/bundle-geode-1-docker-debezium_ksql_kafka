@@ -70,7 +70,7 @@ padogrid/
 │   ├── ...
 ├── log
 └── plugins
-    └── geode-addon-core-0.9.21.jar
+    └── geode-addon-core-0.9.21-tests.jar
 ```
 
 
