@@ -5,4 +5,4 @@ if [ "$1" == "" ]; then
    exit 1
 fi
 
-docker run --rm --tty --network debezium_ksql_kafka_default confluentinc/cp-kafkacat kafkacat -b kafka:9092 -t $1
+docker run --rm --tty --network my_network confluentinc/cp-kafkacat kafkacat -b kafka:9092 -t $1

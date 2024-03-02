@@ -18,5 +18,4 @@ EOF
    exit
 fi
 
-#docker-compose exec ksqldb-cli ksql http://ksqldb-server:8088
-docker exec -it ksqldb-cli ksql http://ksqldb-server:8088
+docker exec -it debezium_ksql_kafka-ksql-cli-1 ksql http://ksqldb-server:8088

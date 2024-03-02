@@ -3,7 +3,7 @@
 ---
 
 <!-- Platforms -->
-[![Host OS](https://github.com/padogrid/padogrid/wiki/images/padogrid-host-os.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Host-OS)
+[![PadoGrid 1.x](https://github.com/padogrid/padogrid/wiki/images/padogrid-padogrid-1.x.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-PadoGrid-1.x) [![Host OS](https://github.com/padogrid/padogrid/wiki/images/padogrid-host-os.drawio.svg)](https://github.com/padogrid/padogrid/wiki/Platform-Host-OS)
 
 # Debezium-KSQL-Kafka Geode Connector
 
@@ -15,7 +15,7 @@ This bundle integrates Geode with Debezium and Confluent KSQL for ingesting init
 install_bundle -download bundle-geode-1-docker-debezium_ksql_kafka
 ```
 
-:exclamation: If you are running this bundle on WSL, make sure your workspace is on a shared folder. The Docker volume it creates will not be visible otherwise.
+❗️ If you are running this bundle on WSL, make sure your workspace is on a shared folder. The Docker volume it creates will not be visible otherwise.
 
 ## Use Case
 
@@ -32,10 +32,21 @@ This use case ingests data changes made in the MySQL database into a Geode clust
 ## Optional Software
 
 - jq
+- Power BI
+
+## Configuring Bundle Environment
+
+Make sure you have all the required products installed.
+
+```bash
+# To use Geode:
+install_padogrid -product geode
+update_padogrid -product geode
+```
 
 ## Building Demo
 
-:pencil2: This bundle builds the demo enviroment based on the Geode version in your workspace. Make sure your workspace has been configured with the desired version before building the demo environment.
+✏️  This bundle builds the demo enviroment based on the Geode version in your workspace. Make sure your workspace has been configured with the desired version before building the demo environment.
 
 Before you begin, make sure you are in a Geode product context by switching into a Geode cluster. You can create a Geode cluster if it does not exist as shown below.
 
@@ -61,6 +72,7 @@ cd_docker debezium_ksql_kafka
 tree padogrid
 ```
 
+Output:
 
 ```console
 padogrid/
@@ -68,54 +80,30 @@ padogrid/
 │   └── client-cache.xml
 ├── lib
 │   ├── ...
-│   ├── geode-addon-core-0.9.21.jar
+│   ├── geode-addon-core-1.0.0.jar
 │   ├── ...
-│   ├── padogrid-common-0.9.21.jar
+│   ├── padogrid-common-1.0.0.jar
 │   ├── ...
 ├── log
 └── plugins
-    └── geode-addon-core-0.9.21-tests.jar
+    └── geode-addon-core-1.0.0-tests.jar
 ```
 
+## Creating `my_network`
+
+Let's create the `my_network` network to which all containers will join.
+
+```bash
+docker network create my_network
+```
 
 ## Creating Geode Docker Containers
 
-Let's create a Geode cluster to run on Docker containers as follows. If you have not installed Geode, then run the `install_padogrid -product geode` command to install the version of your choice and then run the `update_product -product geode` command to set the version.
+Let's create a Geode cluster to run on Docker containers with the network named `my_network` as follows. If you have not installed Geode, then run the `install_padogrid -product geode` command to install the version of your choice and then run the `update_product -product geode` command to set the version.
 
 ```bash
-create_docker -product geode -cluster geode -host host.docker.internal
+create_docker -product geode -cluster geode -network my_network
 cd_docker geode
-```
-
-If you are running Docker Desktop, then the host name, `host.docker.internal`, is accessible from the containers as well as the host machine. You can run the `ping` command to check the host name.
-
-```bash
-ping host.docker.internal
-```
-
-If `host.docker.internal` is not defined then you will need to use the host IP address that can be accessed from both the Docker containers and the host machine. Run `create_docker -?` or `man create_docker` to see the usage.
-
-```bash
-create_docker -?
-```
-
-If you are using a host IP other than `host.docker.internal` then you must also make the change in the Debezium Geode connector configuration file as follows.
-
-```bash
-cd_docker debezium_ksql_kafka
-vi padogrid/etc/client-cache.xml
-```
-
-Replace `host.docker.internal` in `client-cache.xml` with your host IP address.
-
-```xml
-<client-cache ...>
-   ...
-    <pool name="serverPool">
-         <locator host="host.docker.internal" port="10334" />
-    </pool>
-   ...
-</client-cache>
 ```
 
 ## Creating `perf_test_ksql` app
@@ -142,13 +130,35 @@ Set user name and password as follows:
                 <property name="connection.password">dbz</property>
 ```
 
+## Kafka Connect
+
+The Kafka Connect container listens on Kafka streams for database updates and converts them to Geode objects before updating the Geode cluster. Take a look at the `client-cache.xml` file which is loaded by the Kafka Connect container to connect to the Geode cluster. As you can see from below, the locator host is set to `geode-locator-1` which is the host name of the locator set by Docker Compose.
+
+```bash
+cd_docker debezium_ksql_kafka
+cat padogrid/etc/client-cache.xml
+```
+
+Output:
+
+```xml
+<client-cache ...>
+   ...
+    <pool name="serverPool">
+         <locator host="geode-locator-1" port="10334" />
+    </pool>
+   ...
+</client-cache>
+```
+
+
 ## Startup Sequence
 
 ### 1. Start Geode
 
 ```bash
 cd_docker geode
-docker-compose up
+docker compose up -d
 ```
 
 ### 2. Start Debezium
@@ -161,7 +171,7 @@ Start Zookeeper, Kafka, MySQL, Kafka Connect, Confluent KSQL containers:
 
 ```bash
 cd_docker debezium_ksql_kafka
-docker-compose up
+docker compose up -d
 ```
 
 **ksqlDB:**
@@ -170,10 +180,10 @@ Start Zookeeper, Kafka, MySQL, Kafka Connect, Confluent ksqlDB containers:
 
 ```bash
 cd_docker debezium_ksql_kafka
-docker-compose -f docker-compose-ksqldb.yaml up
+docker compose -f docker-compose-ksqldb.yaml up -d
 ```
 
-:exclamation: Wait till all the containers are up before executing the `init_all` script.
+❗️ Wait till all the containers are up before executing the `init_all` script.
 
 Execute `init_all` which performs the following:
 
@@ -516,7 +526,7 @@ quit
 
 ### 10. Run Power BI
 
-This bundle includes the following Power BI files for generating reports by executing OQL queries using the Geode/GemFire REST API.
+This bundle includes the following Power BI files for generating reports by executing OQL queries using the Geode REST API.
 
 ```bash
 cd_docker debezium_ksql_kafka
@@ -571,7 +581,7 @@ Template upload steps:
 The *Kafka Live Archive* group generates JSON files in the `padogrid/nifi/data/json` directory upon receipt of Debezium events from the Kafka topics, `customers` and `orders`. Each file represents a Debezium event containing a database CDC record. Run the `perf_test` app again to generate Kafka events.
 
 ```bash
-cd_docker debezium_ksql_kafka/bin_sh
+cd_docker debezium_ksql_kafka
 tree padogrid/nifi/data/json/
 ```
 
@@ -591,7 +601,7 @@ padogrid/nifi/data/json/
 ```bash
 # Stop KSQL and Kafka containers
 cd_docker debezium_ksql_kafka
-docker-compose down
+docker compose down
 
 # Stop NiFi
 cd_docker debezium_ksql_kafka/bin_sh
@@ -599,7 +609,10 @@ cd_docker debezium_ksql_kafka/bin_sh
 
 # Stop Geode containers
 cd_docker geode
-docker-compose down
+docker compose down
+
+# Remove network
+docker network rm my_network
 
 # Prune all stopped containers
 docker container prune

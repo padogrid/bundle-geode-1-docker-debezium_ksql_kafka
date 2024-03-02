@@ -73,3 +73,8 @@ services:
       - ksql-server
     entrypoint: /bin/sh
     tty: true
+
+networks:
+  default:
+    name: my_network
+    external: true
