@@ -99,7 +99,7 @@ docker network create my_network
 
 ## Creating Geode Docker Containers
 
-Let's create a Geode cluster to run on Docker containers with the network named `my_network` as follows. If you have not installed Geode, then run the `install_padogrid -product geode` command to install the version of your choice and then run the `update_product -product geode` command to set the version.
+Let's create a Geode cluster to run on Docker containers with the `my_network` network we created in the previous section.
 
 ```bash
 create_docker -product geode -cluster geode -network my_network
@@ -150,7 +150,6 @@ Output:
    ...
 </client-cache>
 ```
-
 
 ## Startup Sequence
 
